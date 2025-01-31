@@ -7,6 +7,7 @@ const ERROR_COLOR = new vscode.ThemeColor("statusBarItem.errorBackground");
 export enum AiBuddyState {
     INITIALIZING,
     READY,
+    GENERATING,
     ERROR
 }
 export type StatusBarStateParams = {
@@ -25,31 +26,23 @@ export function initStatusbar(context: vscode.ExtensionContext) {
 }
 
 export function updateStatusbar(state: StatusBarStateParams) {
-    statusBarItem.text = `Ai [${state.aiBuddy?.model}]`;
+    statusBarItem.text = `Ai Buddy [${state.aiBuddy?.model}]`;
     statusBarItem.tooltip = undefined;
     statusBarItem.backgroundColor = undefined;
 
     switch (state.state) {
         case AiBuddyState.INITIALIZING:
-            statusBarItem.text = '$(loading~spin) Ai [Initializing]';
+            statusBarItem.text = 'Ai Buddy [$(loading~spin)]';
             break;
         case AiBuddyState.READY:
+            break;
+        case AiBuddyState.GENERATING:
+            statusBarItem.text = `$(loading~spin) Ai Buddy [${state.aiBuddy?.model}]`;
             break;
         case AiBuddyState.ERROR:
             statusBarItem.backgroundColor = ERROR_COLOR;
             statusBarItem.tooltip = state.data;
             break;
     }
-
-
-    // if (state.loading) {
-    //     statusBarItem.text = '$(loading~spin) Ai';
-    // } else {
-    //     statusBarItem.text = `Ai [${state.model}]`;
-    //     if (state.error) {
-    //         statusBarItem.backgroundColor = errorColor;
-    //         statusBarItem.tooltip = state.error;
-    //     }
-    // }
 }
 

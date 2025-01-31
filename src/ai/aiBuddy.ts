@@ -31,10 +31,11 @@ export class AiBuddy {
     }
 
 
-    public chat(message: Message, messages: Message[] = []) {
+    public chat(message: Message, systemMessage: Message, messages: Message[] = []) {
         return this.ollama?.chat({
             model: this.model,
             messages: [
+                systemMessage,
                 ...messages,
                 message
             ]

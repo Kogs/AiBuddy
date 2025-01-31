@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { AiBuddy } from './ai/aiBuddy';
 import { Message } from 'ollama';
+import { AiBuddyState, updateStatusbar } from './statusBar';
 
 export function enableSideBar(
     context: vscode.ExtensionContext,
@@ -29,7 +31,7 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
 
     private systemMessage: Message = {
         role: 'system',
-        content: `You are an Developer Assistent. Provide usefull programming advice. Short precise answers. Code examples are allowed.` // TODO make configurable
+        content: `You are a helpful developer assistant.` // TODO make configurable
     };
     private messages: Message[] = [];
 
@@ -43,7 +45,9 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
             enableScripts: true,
             localResourceRoots: [this.extensionUri]
         };
-        webviewView.webview.html = this.getHtmlForWebview();
+
+
+        webviewView.webview.html = this.getHtmlForWebview(webviewView);
         webviewView.webview.onDidReceiveMessage(async (e: SideBarMessage) => {
             console.log(e);
             const msg = {
@@ -55,10 +59,16 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
                 content: msg.content
             });
 
-            const resp = await this.aiBuddy.chat(msg, [
-                this.systemMessage,
-                ...this.messages
-            ]);
+            updateStatusbar({
+                state: AiBuddyState.GENERATING,
+                aiBuddy: this.aiBuddy
+            });
+            const resp = await this.aiBuddy.chat(msg, this.systemMessage, this.messages);
+
+            updateStatusbar({
+                state: AiBuddyState.READY,
+                aiBuddy: this.aiBuddy
+            });
 
             this.messages.push(msg);
             if (resp?.message) {
@@ -73,7 +83,14 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
         });
     }
 
-    private getHtmlForWebview(): string {
+    private getHtmlForWebview(webviewView: vscode.WebviewView): string {
+        
+        const markedUri = webviewView.webview.asWebviewUri(
+            vscode.Uri.file(path.join(this.extensionUri.path, 'media', 'marked.min.js'))
+        );
+
+
+
         return /*html*/`
             <!DOCTYPE html>
             <html lang="en">
@@ -104,6 +121,10 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
                     button:hover {
                         background-color: var(--vscode-button-hoverBackground);
                     }
+                    #promptForm {
+                        display: flex;
+                        width: 100%;
+                    }
                     .prompt {
                         padding: 10px;
                         resize: none;
@@ -114,25 +135,95 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
                         cursor: text;
                         width: 100%;
                         color: var(--vscode-input-foreground);
+                        flex-grow: 1;
                     }
                     #messages {
                         overflow: auto;
+                        width: 100%;
+                        display: flex;
+                        flex-direction: column;
                     }
-                    #messages p {
+                    #noMessages {
+                        width: 100%;
+                        height: 100%;
+                        display: block;
+                        align-content: center;
+                        text-align: center;
+                    }
+                    #loading {
+                        order: 99999;
+                        pointer-events: none;
+                    }
+                    #loading img {
+                        width: 100px;
+                        margin-top: 10px;
+                    }
+                    .message-wrapper {
+                        margin-top: 5px;
+                        margin-bottom: 5px;
+                        border: 1px solid transparent;
+                        padding: 5px;
+                        width: calc(100% - 20px);
+                    }
+                    .message-wrapper:hover {
+                        border: 1px solid var(--vscode-button-border, transparent);
+                    }
+                    .message-wrapper .role {
+                        color: gray;
+                    }
+                    .message-wrapper p {
+                        margin-block-start: 5px;
+
+                    }
+                    .message-wrapper .thought {
+                        color: gray;
+                        display: none; /* maybe show to users collapsed or as a popup or somthing*/
+                    }
+                    pre {
+                        /** todo vscode theme colors! */
+                        background: #1e1e1e; /* Dark background */
+                        color: #dcdcdc; /* Light text */
+                        padding: 1rem; /* Add space around text */
+                        border-radius: 8px; /* Rounded corners */
+                        font-size: 14px;
+                        line-height: 1.5;
+                        overflow-x: auto;
                         white-space: pre-wrap;
+                        word-break: break-word;
                     }
+                    code {
+                        background: transparent;
+                    }
+                    code:not(pre code) { /* inline code snipped */
+                        background: #2d2d2d;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-size: 0.95em;
+                    }
+     
+     
                 </style>
+                <script src="${markedUri}"></script>
             </head>
             <body>
-                <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" style="max-width: 200px;"/>
-
                 <div id="messages" style="flex-grow: 1;">
-                    <span id="noMessages">No messages</span>
+                    <div id="noMessages">
+                        <h1>Ai Buddy</h1>
+                        <span>No messages</span>
+                    </div> 
+                    <div id="loading" style="display: none" class="message-wrapper">
+                        <span class="role">Buddy:</span>
+                        <p>
+                            Thinking...<br>
+                            <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif"/>
+                        </p>
+                    </div>
                 </div>
+          
 
                 <form id="promptForm">
-                    <input id="prompt" class="prompt" placeholder="Ask me anything" autofocus onkeyup="textAreaAdjust(this)">
-                    <button type="submit">Click Me</button>
+                    <input id="prompt" class="prompt" placeholder="Ask me anything" autofocus>
+                    <button type="submit">&gt;</button>
                 <form>
                 <script>
                     const vscode = acquireVsCodeApi();
@@ -140,10 +231,9 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
                     const messages = document.getElementById('messages');
                     const promptForm = document.getElementById('promptForm');
                     const prompt = document.getElementById('prompt');
+                    const loading = document.getElementById('loading');
 
-                    window.addEventListener('message', ({data}) => {
-                        addMessage(data);
-                    });
+                    window.addEventListener('message', ({data}) => addMessage(data));
                     promptForm.addEventListener('submit', (e) => {
                         e.preventDefault();
                         const value = prompt.value;
@@ -152,14 +242,28 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
                                 type: "Chat",
                                 content: prompt.value
                             });
+                            noMessages.style.display = 'none';
+                            loading.style.display = 'block';
                         }
                         prompt.value = '';
                     });
                     function addMessage(message) {
-                        noMessages.style.display = 'none';
-                        const p = document.createElement("p");
-                        p.innerHTML = message.content;
-                        messages.append(p);
+                        const isResponse = message.type === 'Response';
+                        if (isResponse) {
+                            loading.style.display = 'none';
+                        }
+                        const msgContent = document.createElement("div");
+                        msgContent.classList.add('message-wrapper');
+
+                        let content = message.content;
+                        content = content.replace('<think>', '<div class="thought">');
+                        content = content.replace('</think>', '</div>');
+
+                        let html = '<span class="role">' + (isResponse ? 'Buddy:' : 'You:') + '</span>' + marked.parse(content);
+                        
+                        msgContent.innerHTML = html;
+                        messages.append(msgContent);
+                        messages.scrollTop = messages.scrollHeight;
                     }
                 </script>
             </body>
