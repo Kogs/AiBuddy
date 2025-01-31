@@ -1,23 +1,14 @@
 import { Message, Ollama } from 'ollama';
 import * as vscode from 'vscode';
 
-type OllamaConfig = {
-    host: string;
-    model: string;
-}
 
 export class AiBuddy {
 
-    public readonly host: string;
-    public readonly model: string;
-    private ollama: Ollama | undefined;
+    public host?: string;
+    public model?: string;
+    private ollama?: Ollama;
 
-    constructor() {
-        const settings = vscode.workspace.getConfiguration('aihelper');
-        const ollamaSettings = settings.get<OllamaConfig>('ollama');
-        this.host = ollamaSettings?.host || 'http://127.0.0.1:11434';
-        this.model = ollamaSettings?.model || '';
-    }
+    constructor() {}
 
     public async init() {
         this.ollama = new Ollama({ 
@@ -31,14 +22,13 @@ export class AiBuddy {
     }
 
 
-    public chat(message: Message, systemMessage: Message, messages: Message[] = []) {
+    public chat(messages: Message[] = []) {
+        if (!this.model || !this.ollama) {
+            throw new Error('Not inizialized');
+        }
         return this.ollama?.chat({
             model: this.model,
-            messages: [
-                systemMessage,
-                ...messages,
-                message
-            ]
+            messages
         });
     }
 

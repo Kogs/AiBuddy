@@ -63,23 +63,29 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
                 state: AiBuddyState.GENERATING,
                 aiBuddy: this.aiBuddy
             });
-            const resp = await this.aiBuddy.chat(msg, this.systemMessage, this.messages);
-
+            this.messages.push(msg);
+            try {
+                const resp = await this.aiBuddy.chat([this.systemMessage, ...this.messages]);
+                console.log(resp);
+                if (resp?.message) {
+                    this.messages.push(resp.message);
+                }
+                await webviewView.webview.postMessage({
+                    type: 'Response',
+                    content: resp?.message.content
+                });
+            } catch (e: any) {
+                await webviewView.webview.postMessage({
+                    type: 'Response',
+                    content: '<span style="color: red;">Failed: ' + e.message + '</span>'
+                });
+            }
             updateStatusbar({
                 state: AiBuddyState.READY,
                 aiBuddy: this.aiBuddy
             });
 
-            this.messages.push(msg);
-            if (resp?.message) {
-                this.messages.push(resp.message);
-            }
-            console.log(resp);
-            
-            await webviewView.webview.postMessage({
-                type: 'Response',
-                content: resp?.message.content
-            });
+
         });
     }
 

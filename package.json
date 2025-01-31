@@ -36,14 +36,14 @@
       ]
     },
     "configuration": {
-      "title": "AI Helper",
+      "title": "AI Buddy",
       "properties": {
-        "aihelper.ollama.host": {
+        "aibuddy.ollama.host": {
           "type": "string",
           "default": "http://127.0.0.1:11434",
           "description": "Url of the Ollama server."
         },
-        "aihelper.ollama.model": {
+        "aibuddy.ollama.model": {
           "type": "string",
           "default": "deepseek-r1:1.5b",
           "description": "Name of the model to use. https://ollama.com/library/"
