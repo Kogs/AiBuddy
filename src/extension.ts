@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { AiBuddyState, createStatusbar, updateStatusbar } from './statusBar';
 import { AiBuddy } from './ai/aiBuddy';
-import { createChatSideBar } from './chatSideBar';
+import { createChatSideBar } from './views/chatSideBar';
 import { createSelectModelCommand } from './commands/selectModelMenu';
 import { createPullModelCommand } from './commands/pullModelMenu';
 import { getConfiguration, OllamaConfig } from './config';

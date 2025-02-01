@@ -1,8 +1,0 @@
-
-
-.prompt {
-    width: calc(100% - 20px);
-    padding: 10px;
-    resize: none;
-    background-color: var(--vscode-input-background)
-}
