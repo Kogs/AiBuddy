@@ -1,5 +1,6 @@
 import { Message, Ollama } from 'ollama';
 import * as vscode from 'vscode';
+import { inlineEdit } from './inlineEdit';
 
 
 export class AiBuddy {

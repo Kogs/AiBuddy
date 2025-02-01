@@ -24,6 +24,10 @@
       {
         "command": "aibuddy.showPullModelMenu",
         "title": "Ai Buddy: Pull model from Ollama library"
+      },
+      {
+        "command": "aibuddy.inlineEdit",
+        "title": "Ai Buddy: Prompt Inline Edit"
       }
     ],
     "viewsContainers": {

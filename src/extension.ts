@@ -6,6 +6,7 @@ import { createChatSideBar } from './views/chatSideBar';
 import { createSelectModelCommand } from './commands/selectModelMenu';
 import { createPullModelCommand } from './commands/pullModelMenu';
 import { getConfiguration, OllamaConfig } from './config';
+import { createInlineEditCommand } from './commands/inlineEdit';
 
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -20,6 +21,7 @@ export async function activate(context: vscode.ExtensionContext) {
     createStatusbar(context);
     createSelectModelCommand(context, aiBuddy);
     createPullModelCommand(context, aiBuddy);
+    createInlineEditCommand(context, aiBuddy);
     createChatSideBar(context, aiBuddy);
     const inizialized = await initAiBuddy(aiBuddy);
 
