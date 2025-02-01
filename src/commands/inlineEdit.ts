@@ -13,7 +13,7 @@ export function createInlineEditCommand(context: vscode.ExtensionContext, aiBudd
             console.log(activeEditor.document.languageId);
 
             const {text} = activeEditor.document.lineAt(activeEditor.selection.active.line);
-            
+
             const input = await vscode.window.showInputBox({
                 title: 'Ai Buddy: Inline Edit request',
                 placeHolder: 'Enter requested code',
@@ -21,7 +21,7 @@ export function createInlineEditCommand(context: vscode.ExtensionContext, aiBudd
             if (!input) {
                 return;
             }
-            await inlineEdit(aiBuddy, input, activeEditor);
+            await inlineEdit(context, aiBuddy, input, activeEditor);
         })
     );
 }
