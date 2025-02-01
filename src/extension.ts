@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
 
-import { AiBuddyState, initStatusbar, updateStatusbar } from './statusBar';
+import { AiBuddyState, createStatusbar, updateStatusbar } from './statusBar';
 import { AiBuddy } from './ai/aiBuddy';
-import { enableSideBar } from './chatSideBar';
+import { createChatSideBar } from './chatSideBar';
+import { createSelectModelCommand } from './commands/selectModelMenu';
+import { createPullModelCommand } from './commands/pullModelMenu';
+import { getConfiguration, OllamaConfig } from './config';
 
-type OllamaConfig = {
-    host: string;
-    model: string;
-}
 
 export async function activate(context: vscode.ExtensionContext) {
     const aiBuddy = new AiBuddy();
@@ -18,8 +17,10 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     }));
 
-    initStatusbar(context);
-    enableSideBar(context, aiBuddy);
+    createStatusbar(context);
+    createSelectModelCommand(context, aiBuddy);
+    createPullModelCommand(context, aiBuddy);
+    createChatSideBar(context, aiBuddy);
     const inizialized = await initAiBuddy(aiBuddy);
 
     console.log('Ai Buddy activated successfully: ' + inizialized);
@@ -28,10 +29,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() { }
 
-async function initAiBuddy(aiBuddy: AiBuddy) {
+export async function initAiBuddy(aiBuddy: AiBuddy) {
     updateStatusbar({ state: AiBuddyState.INITIALIZING });
 
-    const settings = vscode.workspace.getConfiguration('aibuddy');
+    const settings = getConfiguration();
     const ollamaSettings = settings.get<OllamaConfig>('ollama');
     aiBuddy.host = ollamaSettings?.host || 'http://127.0.0.1:11434';
     aiBuddy.model = ollamaSettings?.model || '';
@@ -39,8 +40,8 @@ async function initAiBuddy(aiBuddy: AiBuddy) {
     try {
         await aiBuddy.init();
     } catch (e: any | Error) {
+        console.error('Ai Buddy initialization failed', e);
         updateStatusbar({ state: AiBuddyState.ERROR, aiBuddy, data: e.message });
-        await vscode.window.showErrorMessage('Failed to start AI Buddy. ' + e.message);
         return false;
     }
     updateStatusbar({ state: AiBuddyState.READY, aiBuddy });

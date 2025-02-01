@@ -4,7 +4,7 @@ import { AiBuddy } from './ai/aiBuddy';
 import { Message } from 'ollama';
 import { AiBuddyState, updateStatusbar } from './statusBar';
 
-export function enableSideBar(
+export function createChatSideBar(
     context: vscode.ExtensionContext,
     aiBuddy: AiBuddy
 ) {

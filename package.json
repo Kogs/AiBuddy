@@ -16,7 +16,16 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [],
+    "commands": [
+      {
+        "command": "aibuddy.showSelectModelMenu",
+        "title": "AI Buddy: Select Ollama model"
+      },
+      {
+        "command": "aibuddy.showPullModelMenu",
+        "title": "Ai Buddy: Pull model from Ollama library"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {

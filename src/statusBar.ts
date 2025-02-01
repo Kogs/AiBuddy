@@ -18,7 +18,7 @@ export type StatusBarStateParams = {
 
 let statusBarItem: vscode.StatusBarItem;
 
-export function initStatusbar(context: vscode.ExtensionContext) {
+export function createStatusbar(context: vscode.ExtensionContext) {
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 1000);
     statusBarItem.show();
     context.subscriptions.push(statusBarItem);
@@ -29,6 +29,7 @@ export function updateStatusbar(state: StatusBarStateParams) {
     statusBarItem.text = `Ai Buddy [${state.aiBuddy?.model}]`;
     statusBarItem.tooltip = undefined;
     statusBarItem.backgroundColor = undefined;
+    statusBarItem.command = 'aibuddy.showSelectModelMenu';
 
     switch (state.state) {
         case AiBuddyState.INITIALIZING:

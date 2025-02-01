@@ -21,14 +21,30 @@ export class AiBuddy {
         }
     }
 
-
     public chat(messages: Message[] = []) {
         if (!this.model || !this.ollama) {
             throw new Error('Not inizialized');
         }
-        return this.ollama?.chat({
+        return this.ollama.chat({
             model: this.model,
             messages
+        });
+    }
+
+    public async getModels() {
+        if (!this.ollama) {
+            throw new Error('Not inizialized');
+        }
+        return (await this.ollama.list()).models;
+    }
+
+    public async pullModel(model: string) {
+        if (!this.ollama) {
+            throw new Error('Not inizialized');
+        }
+        return await this.ollama.pull({
+            model,
+            stream: true
         });
     }
 
