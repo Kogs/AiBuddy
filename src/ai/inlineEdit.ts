@@ -16,7 +16,7 @@ export async function inlineEdit(context: vscode.ExtensionContext, aiBuddy: AiBu
     // maybe use json messages and response.
     const resp = await aiBuddy.chat([
         SYSTEM_INIT_CODE_COMPLETE,
-        getWorkspaceContextMessage(),
+        await getWorkspaceContextMessage(),
         {
             role: 'user',
             content: `\`\`\`${editor.document.languageId}\n${editor.document.getText()}\`\`\``

@@ -62,7 +62,7 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
             });
             this.messages.push(msg);
             try {
-                const resp = await this.aiBuddy.chat([SYSTEM_INIT, getWorkspaceContextMessage(), ...this.messages]);
+                const resp = await this.aiBuddy.chat([SYSTEM_INIT, await getWorkspaceContextMessage(), ...this.messages]);
                 console.log(resp);
                 if (resp?.message) {
                     this.messages.push(resp.message);
