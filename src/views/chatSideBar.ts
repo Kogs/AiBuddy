@@ -3,6 +3,7 @@ import * as path from 'path';
 import { AiBuddy } from '../ai/aiBuddy';
 import { Message } from 'ollama';
 import { AiBuddyState, updateStatusbar } from '../statusBar';
+import { getWorkspaceContextMessage, SYSTEM_INIT } from '../ai/systemMessage';
 
 export function createChatSideBar(
     context: vscode.ExtensionContext,
@@ -29,10 +30,7 @@ type SideBarMessage = {
 
 class SidebarViewProvider implements vscode.WebviewViewProvider {
 
-    private systemMessage: Message = {
-        role: 'system',
-        content: `You are a helpful developer assistant.` // TODO make configurable
-    };
+
     private messages: Message[] = [];
 
     constructor(
@@ -58,14 +56,13 @@ class SidebarViewProvider implements vscode.WebviewViewProvider {
                 type: 'Chat',
                 content: msg.content
             });
-
             updateStatusbar({
                 state: AiBuddyState.GENERATING,
                 aiBuddy: this.aiBuddy
             });
             this.messages.push(msg);
             try {
-                const resp = await this.aiBuddy.chat([this.systemMessage, ...this.messages]);
+                const resp = await this.aiBuddy.chat([SYSTEM_INIT, getWorkspaceContextMessage(), ...this.messages]);
                 console.log(resp);
                 if (resp?.message) {
                     this.messages.push(resp.message);

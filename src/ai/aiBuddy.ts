@@ -1,6 +1,5 @@
 import { Message, Ollama } from 'ollama';
 import * as vscode from 'vscode';
-import { inlineEdit } from './inlineEdit';
 
 
 export class AiBuddy {
@@ -26,6 +25,7 @@ export class AiBuddy {
         if (!this.model || !this.ollama) {
             throw new Error('Not inizialized');
         }
+        console.log(messages);
         return this.ollama.chat({
             model: this.model,
             messages

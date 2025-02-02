@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AiBuddy } from './aiBuddy';
 import { AiBuddyState, updateStatusbar } from '../statusBar';
+import { getWorkspaceContextMessage, SYSTEM_INIT_CODE_COMPLETE } from './systemMessage';
 
 export async function inlineEdit(context: vscode.ExtensionContext, aiBuddy: AiBuddy, prompt: string, editor: vscode.TextEditor) {
     updateStatusbar({
@@ -14,10 +15,8 @@ export async function inlineEdit(context: vscode.ExtensionContext, aiBuddy: AiBu
     const fileName = path.basename(editor.document.fileName);
     // maybe use json messages and response.
     const resp = await aiBuddy.chat([
-        {
-            role: 'system',
-            content: 'You are an developer assistant. Repeat the given SourceCode with the requested changes. Only answer in source code.'
-        },
+        SYSTEM_INIT_CODE_COMPLETE,
+        getWorkspaceContextMessage(),
         {
             role: 'user',
             content: `\`\`\`${editor.document.languageId}\n${editor.document.getText()}\`\`\``
