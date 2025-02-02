@@ -64,7 +64,7 @@
         "aibuddy.context.detectProjectFiles.enabled": {
           "type": "boolean",
           "default": "true",
-          "description": "If enabled project configuration files will be included in the chat context."
+          "description": "If enabled, a list of project configuration files will be included in Ai Buddies context."
         },
         "aibuddy.context.detectProjectFiles.glob": {
           "type": "string",
@@ -73,12 +73,9 @@
         },
         "aibuddy.context.detectProjectFiles.exclude": {
           "type": "string",
-          "default": "**/node_modules/**",
+          "default": "**/{node_modules,dist,build,out,target}/**",
           "description": "Glob pattern to exclude project configuration files."
         }
-
-
-       
       }
     }
   },

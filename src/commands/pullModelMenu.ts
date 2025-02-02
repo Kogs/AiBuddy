@@ -3,13 +3,13 @@ import { AiBuddy } from '../ai/aiBuddy';
 
 export function createPullModelCommand(context: vscode.ExtensionContext, aiBuddy: AiBuddy) {
     context.subscriptions.push(
-        vscode.commands.registerCommand('aibuddy.showPullModelMenu', async () => {
+        vscode.commands.registerCommand('aibuddy.showPullModelMenu', async (suggestedModel: string = 'deepseek-r1:1.5b') => {
             const userInput = await vscode.window.showInputBox({
                 title: 'Ai Buddy: Download a model from the ollama library',
                 prompt: 'See [https://ollama.com/search](https://ollama.com/search) for avaiaible model names.',
                 placeHolder: "Enter model name",
                 ignoreFocusOut: true,
-                value: 'deepseek-r1:1.5b' // maybe make this smart or something?
+                value: suggestedModel
             });
             if (!userInput) {
                 return;
